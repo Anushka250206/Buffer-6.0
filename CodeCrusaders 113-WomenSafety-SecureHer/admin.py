@@ -2,52 +2,59 @@ import tkinter as tk
 from tkinter import messagebox
 import mysql.connector
 
-def admin_login():
-    def check_credentials():
-        username = entry_user.get()
-        password = entry_pass.get()
 
-        conn = mysql.connector.connect(
+def admin_login():     # Function to handle admin login
+    def check_credentials():
+        username = entry_user.get()    # Retrieve the username
+        password = entry_pass.get()    # and password entered by the admin
+
+        conn = mysql.connector.connect(    #connection to the MySQL database
             host="localhost",
             user="root",
             password="root",
             database="SecureHer"
         )
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM admin WHERE adname=%s AND password=%s", (username, password))
-        result = cursor.fetchone()
-        conn.close()
+        cursor = conn.cursor()  # Check if the entered credentials match with the admin table
+        cursor.execute("SELECT * FROM admin WHERE adname=%s AND password=%s", (username, password))      
+        result = cursor.fetchone()   # Get the result of the query
+        conn.close()                  # Close the database connection
 
         if result:
-            messagebox.showinfo("Success", f"Welcome {username}!")
-            login_window.destroy()
+            messagebox.showinfo("Success", f"Welcome {username}!")   # If credentials match, show success message and open report view
+            login_window.destroy()                  # Closes the login window
             view_reports()
         else:
-            messagebox.showerror("Error", "Invalid admin credentials")
+            messagebox.showerror("Error", "Invalid admin credentials")   # If credentials don't match, show error message
 
+    # Create a new window for admin login
     login_window = tk.Toplevel()
     login_window.title("Admin Login")
-    login_window.geometry("300x200")
+    login_window.geometry("300x200")   # Size of the window
 
+    # Username field for admin login
     tk.Label(login_window, text="Admin Username").pack(pady=5)
-    entry_user = tk.Entry(login_window)
+    entry_user = tk.Entry(login_window)    # Entry widget for username
     entry_user.pack(pady=5)
 
+    # Password field for admin login
     tk.Label(login_window, text="Password").pack(pady=5)
-    entry_pass = tk.Entry(login_window, show='*')
+    entry_pass = tk.Entry(login_window, show='*')     # Entry widget for password with hidden character
     entry_pass.pack(pady=5)
 
+    # Button to trigger the check_credentials function
     tk.Button(login_window, text="Login", command=check_credentials).pack(pady=10)
 
-
+# Function to view all the reports (offline and online)
 def view_reports():
-    report_window = tk.Toplevel()
-    report_window.title("User Reports")
-    report_window.geometry("900x600")
+    report_window = tk.Toplevel()  # Create a new window to display the reports
+    report_window.title("User Reports")  # title of the report window
+    report_window.geometry("900x600")  # Size of the report window
 
+    # Text widget to display the reports
     report_text = tk.Text(report_window, wrap=tk.WORD, font=("Arial", 10))
     report_text.pack(expand=True, fill='both', padx=10, pady=10)
 
+    #connection to the MySQL database
     try:
         conn = mysql.connector.connect(
             host="localhost",
@@ -73,7 +80,7 @@ def view_reports():
         cursor.execute("""
             SELECT id, name, contact, category, description, platform, url, reported_time
             FROM online_reports
-        """)
+        """)    
         online_reports = cursor.fetchall()
 
         report_text.insert(tk.END, "\n==== ONLINE REPORTS ====\n\n")
@@ -82,5 +89,6 @@ def view_reports():
 
         conn.close()
 
+    #Handles database connection error
     except mysql.connector.Error as err:
         messagebox.showerror("Database Error", f"Error: {err}")
